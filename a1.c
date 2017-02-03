@@ -9,12 +9,45 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-//
-// This code is given for illustration purposes. You need not include or follow this
-// strictly. Feel free to writer better or bug free code. This example code block does not
-// worry about deallocating memory. You need to ensure memory is allocated and deallocated
-// properly so that your shell works without leaking memory.
-//
+// Function Declaratons
+int getcmd(char *prompt, char *args[], int *background);
+static void sigHandlerKill(int sig);
+static void sigHandlerIgnore(int sig);
+
+int main(void) {
+	char *args[20];
+	int bg;
+
+	// Signal Handlers
+	// Ctrl C
+	if (signal(SIGINT, sigHandlerKill) == SIG_ERR) {
+		printf("ERROR! Could not bind the signal hander\n");
+		exit(1);
+	}
+	// Ctrl Z
+	if (signal(SIGTSTP, sigHandlerIgnore) == SIG_ERR) {
+		printf("ERROR! Could not bind the signal hander \n");
+		exit(1);
+	}
+
+	while(1) {
+		bg = 0;
+		int cnt = getcmd("\n>> ", args, &bg);
+
+		int pid = fork();
+		if (pid == 0){
+			// Child goes here
+			execvp(args[0], args);
+			// Past this point of the condition, nothing will run
+		} else {
+			// Parent goes here, wait until the child is done
+			waitpid(pid, NULL, 0);
+		}
+
+	}
+}
+
+// TODO ensure memory is allocated and deallocated
 int getcmd(char *prompt, char *args[], int *background)
 {
 	// Clean args
@@ -48,43 +81,16 @@ int getcmd(char *prompt, char *args[], int *background)
 		if (strlen(token) > 0)
 			args[i++] = token;
 	}
-
-
-
 return i;
 }
 
-int main(void) {
-	char *args[20];
-	int bg;
-
-	if (signal(SIGINT, sigHandler) == SIG_ERR) {
-		prinf("ERROR! Could not bind the signal hander\n");
-		exit(1);
-	}
-
-	while(1) {
-		bg = 0;
-		int cnt = getcmd("\n>> ", args, &bg);
-		/* the steps can be..:
-		(1) fork a child process using fork()
-		(2) the child process will invoke execvp()
-		(3) if background is not specified, the parent will wait,
-		otherwise parent starts the next command... */
-
-		int pid = fork();
-		if (pid == 0){
-			// Child goes here
-			execvp(args[0], args);
-			// Past this point of the condition, nothing will run
-		} else {
-			// Parent goes here, wait until the child is done
-			waitpid(pid, NULL, 0);
-		}
-
-	}
+static void sigHandlerKill(int sig){
+	printf(" Caught signal %d, Ctrl+C Acknowledged, killing process.\n", sig);
+	kill(0, 0); // Kill child
 }
 
-static void sigHandler(int sig){
-	printf("Signal caught: %d\n", sig);
+static void sigHandlerIgnore(int sig){
+	printf(" Caught signal %d, Ctrl+Z Acknowledged, ignoring.\n", sig);
 }
+
+
