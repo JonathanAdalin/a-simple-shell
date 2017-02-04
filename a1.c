@@ -1,6 +1,9 @@
 // Jonathan Adalin
 // 260636904
 
+// TODO Allocate memory to pointers using malloc()
+// TODO Free pointers using free()
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -44,6 +47,11 @@ int main(void) {
 			if (strcmp(args[0], "nap") == 0){
 				sleep(5);
 				printf("I'm up! I'm up!");
+			}else if(strcmp(args[0], "cd") == 0){
+				printf("Going to: %s", args[1]);
+				chdir(args[1]);
+			}else if(strcmp(args[0], "pwd") == 0){
+				printf("Present working directory is: %s", getcwd(NULL,0));
 			}
 			else{
 				execvp(args[0], args);
