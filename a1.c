@@ -13,18 +13,22 @@
 int getcmd(char *prompt, char *args[], int *background);
 static void sigHandlerKill(int sig);
 static void sigHandlerIgnore(int sig);
+static void sleepFive();
 
 int main(void) {
 	char *args[20];
 	int bg;
 
+	// TODO Uncomment before submission
 	// Signal Handlers
+
 	// Ctrl C
-	if (signal(SIGINT, sigHandlerKill) == SIG_ERR) {
-		printf("ERROR! Could not bind the signal hander\n");
-		exit(1);
-	}
-	// Ctrl Z
+	// if (signal(SIGINT, sigHandlerKill) == SIG_ERR) {
+	// 	printf("ERROR! Could not bind the signal hander\n");
+	// 	exit(1);
+	// }
+
+	//Ctrl Z
 	if (signal(SIGTSTP, sigHandlerIgnore) == SIG_ERR) {
 		printf("ERROR! Could not bind the signal hander \n");
 		exit(1);
@@ -37,8 +41,14 @@ int main(void) {
 		int pid = fork();
 		if (pid == 0){
 			// Child goes here
-			execvp(args[0], args);
-			// Past this point of the condition, nothing will run
+			if (strcmp(args[0], "nap") == 0){
+				sleep(5);
+				printf("I'm up! I'm up!");
+			}
+			else{
+				execvp(args[0], args);
+				// Past this point of the condition, nothing will run
+			}
 		} else {
 			// Parent goes here, wait until the child is done
 			waitpid(pid, NULL, 0);
@@ -94,3 +104,17 @@ static void sigHandlerIgnore(int sig){
 }
 
 
+
+// cd, use chdir()
+
+// pwd, use getcwd()
+
+// exit, use exit()
+
+// fg (just make the shell wait for the program?)
+
+// jobs
+
+// output redirection
+
+// piping
