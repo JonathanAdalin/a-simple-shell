@@ -23,27 +23,26 @@
 int getcmd(char *prompt, char *args[], int *background);
 static void sigHandlerKill(int sig);
 static void sigHandlerIgnore(int sig);
-static void sleepFive(); // used for testing
+static void shellNap(); // used for testing
 static void shellCd(char *args[]);
 static void shellPwd();
 static void shellExit();
 static void shellJobs(char *jobList[]);
-static void addJob(char *job,char *jobList[]);
+static void addJob(char *arg, char job[20]);
 static void removeJob();
 
-// Global variables
-int jobCounter = 1;
+// Global Variables
+int jobCounter = 0;
 
 int main(void) {
 	char *args[20];
-	char *jobList[20];
+	char jobList[20][20];
 
 	// clean JobList
 	for (int i = 0; i<20; i++){
-		jobList[i] = 0;
+		snprintf(jobList[i], 5,"NA");
 	}
 
-	int jobCounter = 0;
 	int bg;
 
 	// TODO Uncomment before submission
@@ -69,17 +68,27 @@ int main(void) {
 		if (pid == 0){
 			// Child goes here
 			if (strcmp(args[0], "nap") == 0){
-				addJob(args[0], jobList);
-				sleep(5);
-				printf("I'm up! I'm up!");
+				shellNap(); // for testing
 			}else if(strcmp(args[0], "cd") == 0){
+				addJob(args[0], jobList[jobCounter]);
+				jobCounter = jobCounter + 1;
 				shellCd(args);
 			}else if(strcmp(args[0], "pwd") == 0){
+				addJob(args[0], jobList[jobCounter]);
+				jobCounter = jobCounter + 1;
 				shellPwd();
 			}else if(strcmp(args[0], "exit") == 0){
 				shellExit();
+				for (int i = 0; i < 20; i++)
+				{
+					free(jobList[i]);
+				}
 			}else if(strcmp(args[0], "jobs") == 0){
-				shellJobs(jobList);
+				printf("Listing jobs:\n");
+				for (int i = 0; i<20; i++){	
+					if (strcmp(jobList[i], "NA") != 0)
+						printf("%s\n", jobList[i]);
+				}
 			}else{
 				execvp(args[0], args);
 			}
@@ -138,6 +147,10 @@ static void sigHandlerIgnore(int sig){
 	printf(" Caught signal %d, Ctrl+Z Acknowledged, ignoring.\n", sig);
 }
 
+static void shellNap(){
+	sleep(5);
+	printf("I'm up! I'm up!");
+}
 
 static void shellCd(char *args[]){
 	printf("Going to: %s", args[1]);
@@ -153,27 +166,9 @@ static void shellExit(){
 	exit(0);
 }
 
-static void shellJobs(char *jobList[]){
-	printf("Listing Jobs:\n");
-	for (int i = 0; i<20; i++){
-		if (jobList[i] != NULL) {
-			printf("%s", jobList[i]);
-		}
-	}
-}
-
-static void addJob(char *arg,char *jobList[]){
-	char job[20];
-	snprintf(job, 12,"%d %s",jobCounter, arg);
-	printf ("%s\n", job);
-	for (int i = 0; i<20; i++){
-		if (jobList[i] == 0) {
-			jobList[i] = &job;
-			break;
-		}
-	}
-	jobCounter++;
-	printf("jobList[0] is %s", jobList[0]);
+static void addJob(char *arg, char job[20]){
+	snprintf(job, 20,"%d %s",jobCounter, arg);
+	printf("%s", job);
 }
 
 static void removeJob(){
