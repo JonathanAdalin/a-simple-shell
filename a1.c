@@ -17,8 +17,8 @@ int getcmd(char *prompt, char *args[], int *background);
 static void sigHandlerKill(int sig);
 static void sigHandlerIgnore(int sig);
 static void sleepFive(); // used for testing
-static void shellcd(char *args[]);
-static void shellpwd();
+static void shellCd(char *args[]);
+static void shellPwd();
 
 int main(void) {
 	char *args[20];
@@ -42,6 +42,11 @@ int main(void) {
 	while(1) {
 		bg = 0;
 		int cnt = getcmd("\n>> ", args, &bg);
+		
+		// Check if exit
+		if (strcmp(args[0], "exit") == 0){
+			exit(0);
+		}
 
 		int pid = fork();
 		if (pid == 0){
@@ -50,11 +55,10 @@ int main(void) {
 				sleep(5);
 				printf("I'm up! I'm up!");
 			}else if(strcmp(args[0], "cd") == 0){
-				shellcd(args);
+				shellCd(args);
 			}else if(strcmp(args[0], "pwd") == 0){
-				shellpwd();
-			}
-			else{
+				shellPwd();
+			}else{
 				execvp(args[0], args);
 			}
 		} else {
@@ -65,7 +69,6 @@ int main(void) {
 	}
 }
 
-// TODO ensure memory is allocated and deallocated
 int getcmd(char *prompt, char *args[], int *background)
 {
 	// Clean args
@@ -112,16 +115,14 @@ static void sigHandlerIgnore(int sig){
 }
 
 
-static void shellcd(char *args[]){
+static void shellCd(char *args[]){
 	printf("Going to: %s", args[1]);
 	chdir(args[1]);
 }
 
-static void shellpwd(){
+static void shellPwd(){
 	printf("Present working directory is: %s", getcwd(NULL,0));
 }
-
-// exit, use exit()
 
 // fg (just make the shell wait for the program?)
 
