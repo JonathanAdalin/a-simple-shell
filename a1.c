@@ -1,8 +1,14 @@
 // Jonathan Adalin
 // 260636904
 
-// TODO Allocate memory to pointers using malloc()
-// TODO Free pointers using free()
+// TODO: 
+// fg (just make the shell wait for the program?)
+// jobs
+// output redirection
+// piping
+// memory leak problems i.e. 
+// allocate memory to pointers using malloc()
+// free pointers using free()
 
 #include <stdio.h>
 #include <unistd.h>
@@ -19,6 +25,7 @@ static void sigHandlerIgnore(int sig);
 static void sleepFive(); // used for testing
 static void shellCd(char *args[]);
 static void shellPwd();
+static void shellExit();
 
 int main(void) {
 	char *args[20];
@@ -43,11 +50,6 @@ int main(void) {
 		bg = 0;
 		int cnt = getcmd("\n>> ", args, &bg);
 		
-		// Check if exit
-		if (strcmp(args[0], "exit") == 0){
-			exit(0);
-		}
-
 		int pid = fork();
 		if (pid == 0){
 			// Child goes here
@@ -58,14 +60,16 @@ int main(void) {
 				shellCd(args);
 			}else if(strcmp(args[0], "pwd") == 0){
 				shellPwd();
+			}else if(strcmp(args[0], "exit") == 0){
+				shellExit();
 			}else{
 				execvp(args[0], args);
 			}
 		} else {
 			// Parent goes here, wait until the child is done
-			waitpid(pid, NULL, 0);
+			waitpid(pid, NULL, 0);	
+			exit(0);		
 		}
-
 	}
 }
 
@@ -124,10 +128,7 @@ static void shellPwd(){
 	printf("Present working directory is: %s", getcwd(NULL,0));
 }
 
-// fg (just make the shell wait for the program?)
-
-// jobs
-
-// output redirection
-
-// piping
+static void shellExit(){
+	printf("Leaving shell\n");
+	exit(0);
+}
