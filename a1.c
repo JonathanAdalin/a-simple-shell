@@ -9,6 +9,7 @@
 // memory leak problems i.e. 
 // allocate memory to pointers using malloc()
 // free pointers using free()
+// uncomment ctrl C handler
 
 #include <stdio.h>
 #include <unistd.h>
@@ -26,9 +27,23 @@ static void sleepFive(); // used for testing
 static void shellCd(char *args[]);
 static void shellPwd();
 static void shellExit();
+static void shellJobs(char *jobList[]);
+static void addJob(char *job,char *jobList[]);
+static void removeJob();
+
+// Global variables
+int jobCounter = 1;
 
 int main(void) {
 	char *args[20];
+	char *jobList[20];
+
+	// clean JobList
+	for (int i = 0; i<20; i++){
+		jobList[i] = 0;
+	}
+
+	int jobCounter = 0;
 	int bg;
 
 	// TODO Uncomment before submission
@@ -54,6 +69,7 @@ int main(void) {
 		if (pid == 0){
 			// Child goes here
 			if (strcmp(args[0], "nap") == 0){
+				addJob(args[0], jobList);
 				sleep(5);
 				printf("I'm up! I'm up!");
 			}else if(strcmp(args[0], "cd") == 0){
@@ -62,6 +78,8 @@ int main(void) {
 				shellPwd();
 			}else if(strcmp(args[0], "exit") == 0){
 				shellExit();
+			}else if(strcmp(args[0], "jobs") == 0){
+				shellJobs(jobList);
 			}else{
 				execvp(args[0], args);
 			}
@@ -133,4 +151,31 @@ static void shellPwd(){
 static void shellExit(){
 	printf("Leaving shell\n");
 	exit(0);
+}
+
+static void shellJobs(char *jobList[]){
+	printf("Listing Jobs:\n");
+	for (int i = 0; i<20; i++){
+		if (jobList[i] != NULL) {
+			printf("%s", jobList[i]);
+		}
+	}
+}
+
+static void addJob(char *arg,char *jobList[]){
+	char job[20];
+	snprintf(job, 12,"%d %s",jobCounter, arg);
+	printf ("%s\n", job);
+	for (int i = 0; i<20; i++){
+		if (jobList[i] == 0) {
+			jobList[i] = &job;
+			break;
+		}
+	}
+	jobCounter++;
+	printf("jobList[0] is %s", jobList[0]);
+}
+
+static void removeJob(){
+
 }
