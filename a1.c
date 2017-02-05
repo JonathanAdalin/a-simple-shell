@@ -1,6 +1,11 @@
 // Jonathan Adalin
 // 260636904
 
+// Assumptions:
+// The user will only input the commands that we
+// were asked to implement 
+
+
 // TODO: 
 // fg (just make the shell wait for the program?)
 // jobs
@@ -23,7 +28,6 @@
 int getcmd(char *prompt, char *args[], int *background);
 static void sigHandlerKill(int sig);
 static void sigHandlerIgnore(int sig);
-static void shellNap(); // used for testing
 static void shellCd(char *args[]);
 static void shellPwd();
 static void shellExit();
@@ -66,16 +70,12 @@ int main(void) {
 		
 		int pid = fork();
 		if (pid == 0){
+			addJob(args[0], jobList[jobCounter]);
+			jobCounter = jobCounter + 1;
 			// Child goes here
-			if (strcmp(args[0], "nap") == 0){
-				shellNap(); // for testing
-			}else if(strcmp(args[0], "cd") == 0){
-				addJob(args[0], jobList[jobCounter]);
-				jobCounter = jobCounter + 1;
+			if(strcmp(args[0], "cd") == 0){
 				shellCd(args);
 			}else if(strcmp(args[0], "pwd") == 0){
-				addJob(args[0], jobList[jobCounter]);
-				jobCounter = jobCounter + 1;
 				shellPwd();
 			}else if(strcmp(args[0], "exit") == 0){
 				shellExit();
@@ -90,6 +90,7 @@ int main(void) {
 						printf("%s\n", jobList[i]);
 				}
 			}else{
+				printf("Got here");
 				execvp(args[0], args);
 			}
 		} else {
@@ -147,11 +148,6 @@ static void sigHandlerIgnore(int sig){
 	printf(" Caught signal %d, Ctrl+Z Acknowledged, ignoring.\n", sig);
 }
 
-static void shellNap(){
-	sleep(5);
-	printf("I'm up! I'm up!");
-}
-
 static void shellCd(char *args[]){
 	printf("Going to: %s", args[1]);
 	chdir(args[1]);
@@ -168,7 +164,6 @@ static void shellExit(){
 
 static void addJob(char *arg, char job[20]){
 	snprintf(job, 20,"%d %s",jobCounter, arg);
-	printf("%s", job);
 }
 
 static void removeJob(){
