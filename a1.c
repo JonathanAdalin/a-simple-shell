@@ -66,9 +66,11 @@ int main(void) {
 				execvp(args[0], args);
 			}
 		} else {
-			// Parent goes here, wait until the child is done
-			waitpid(pid, NULL, 0);	
-			exit(0);		
+			// Parent goes here
+			if (!bg){
+				waitpid(pid, NULL, 0);	
+				exit(0);
+			}
 		}
 	}
 }
