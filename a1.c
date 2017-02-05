@@ -33,7 +33,7 @@ static void shellPwd();
 static void shellExit();
 static void shellJobs(char *jobList[]);
 static void addJob(char *arg, char job[20]);
-static void removeJob();
+static void removeJob(char job[20]);
 
 // Global Variables
 int jobCounter = 0;
@@ -70,34 +70,36 @@ int main(void) {
 		
 		int pid = fork();
 		if (pid == 0){
-			addJob(args[0], jobList[jobCounter]);
+			int jobNumber = jobCounter;			
 			jobCounter = jobCounter + 1;
+			addJob(args[0], jobList[jobNumber]);
 			// Child goes here
 			if(strcmp(args[0], "cd") == 0){
 				shellCd(args);
+				removeJob(jobList[jobNumber]);
 			}else if(strcmp(args[0], "pwd") == 0){
 				shellPwd();
+				removeJob(jobList[jobNumber]);
 			}else if(strcmp(args[0], "exit") == 0){
-				shellExit();
-				for (int i = 0; i < 20; i++)
-				{
+				for (int i = 0; i < 20; i++){
 					free(jobList[i]);
 				}
+				shellExit();
 			}else if(strcmp(args[0], "jobs") == 0){
 				printf("Listing jobs:\n");
 				for (int i = 0; i<20; i++){	
 					if (strcmp(jobList[i], "NA") != 0)
 						printf("%s\n", jobList[i]);
 				}
+				removeJob(jobList[jobNumber]);
 			}else{
-				printf("Got here");
 				execvp(args[0], args);
+				// No code is executed past this point
 			}
 		} else {
 			// Parent goes here
 			if (!bg){
 				waitpid(pid, NULL, 0);	
-				exit(0);
 			}
 		}
 	}
@@ -166,6 +168,6 @@ static void addJob(char *arg, char job[20]){
 	snprintf(job, 20,"%d %s",jobCounter, arg);
 }
 
-static void removeJob(){
-
+static void removeJob(char job[20]){
+	snprintf(job, 20,"%s", "NA");
 }
