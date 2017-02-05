@@ -68,9 +68,9 @@ int main(void) {
 		int cnt = getcmd("\n>> ", args, &bg);
 		
 		int pid = fork();
+		int jobNumber = jobCounter;			
+		jobCounter = jobCounter + 1;
 		if (pid == 0){
-			int jobNumber = jobCounter;			
-			jobCounter = jobCounter + 1;
 			addJob(args[0], jobList[jobNumber]);
 			// Child goes here
 			if(strcmp(args[0], "cd") == 0){
@@ -99,6 +99,7 @@ int main(void) {
 			}
 		} else {
 			// Parent goes here
+			addJob(args[0], jobList[jobNumber]);
 			if (!bg){
 				waitpid(pid, NULL, 0);	
 			}
