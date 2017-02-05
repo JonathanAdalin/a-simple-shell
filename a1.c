@@ -16,7 +16,9 @@
 int getcmd(char *prompt, char *args[], int *background);
 static void sigHandlerKill(int sig);
 static void sigHandlerIgnore(int sig);
-static void sleepFive();
+static void sleepFive(); // used for testing
+static void shellcd(char *args[]);
+static void shellpwd();
 
 int main(void) {
 	char *args[20];
@@ -48,14 +50,12 @@ int main(void) {
 				sleep(5);
 				printf("I'm up! I'm up!");
 			}else if(strcmp(args[0], "cd") == 0){
-				printf("Going to: %s", args[1]);
-				chdir(args[1]);
+				shellcd(args);
 			}else if(strcmp(args[0], "pwd") == 0){
-				printf("Present working directory is: %s", getcwd(NULL,0));
+				shellpwd();
 			}
 			else{
 				execvp(args[0], args);
-				// Past this point of the condition, nothing will run
 			}
 		} else {
 			// Parent goes here, wait until the child is done
@@ -112,10 +112,14 @@ static void sigHandlerIgnore(int sig){
 }
 
 
+static void shellcd(char *args[]){
+	printf("Going to: %s", args[1]);
+	chdir(args[1]);
+}
 
-// cd, use chdir()
-
-// pwd, use getcwd()
+static void shellpwd(){
+	printf("Present working directory is: %s", getcwd(NULL,0));
+}
 
 // exit, use exit()
 
