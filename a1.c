@@ -7,8 +7,6 @@
 
 
 // TODO: 
-// fg (just make the shell wait for the program?)
-// jobs
 // output redirection
 // piping
 // memory leak problems i.e. 
@@ -34,6 +32,7 @@ static void shellExit();
 static void shellJobs(char *jobList[]);
 static void addJob(char *arg, char job[20]);
 static void removeJob(char job[20]);
+static void shellFg();
 
 // Global Variables
 int jobCounter = 0;
@@ -92,6 +91,8 @@ int main(void) {
 						printf("%s\n", jobList[i]);
 				}
 				removeJob(jobList[jobNumber]);
+			}else if(strcmp(args[0], "fg") == 0){
+				shellFg(args[1]);
 			}else{
 				execvp(args[0], args);
 				// No code is executed past this point
@@ -170,4 +171,10 @@ static void addJob(char *arg, char job[20]){
 
 static void removeJob(char job[20]){
 	snprintf(job, 20,"%s", "NA");
+}
+
+static void shellFg(char *arg){
+	// 1) Find the process by checking each job in jobList
+	//    if it contains arg 
+	// 2) Use waitpid to wait for this process
 }
