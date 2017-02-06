@@ -1,18 +1,11 @@
 // Jonathan Adalin
 // 260636904
 
-// Assumptions:
-// The user will only input the commands that we
-// were asked to implement 
-
-
 // TODO: 
-// output redirection
 // piping
 // memory leak problems i.e. 
 // allocate memory to pointers using malloc()
 // free pointers using free()
-// uncomment ctrl C handler
 
 #include <stdio.h>
 #include <unistd.h>
@@ -21,6 +14,7 @@
 // Added libraries
 #include <sys/wait.h>
 #include <signal.h>
+#include <fcntl.h>
 
 // Function Declaratons
 int getcmd(char *prompt, char *args[], int *background);
@@ -52,10 +46,10 @@ int main(void) {
 	// Signal Handlers
 
 	// Ctrl C
-	// if (signal(SIGINT, sigHandlerKill) == SIG_ERR) {
-	// 	printf("ERROR! Could not bind the signal hander\n");
-	// 	exit(1);
-	// }
+	if (signal(SIGINT, sigHandlerKill) == SIG_ERR) {
+		printf("ERROR! Could not bind the signal hander\n");
+		exit(1);
+	}
 
 	//Ctrl Z
 	if (signal(SIGTSTP, sigHandlerIgnore) == SIG_ERR) {
@@ -66,13 +60,19 @@ int main(void) {
 	while(1) {
 		bg = 0;
 		int cnt = getcmd("\n>> ", args, &bg);
-		
 		int pid = fork();
 		int jobNumber = jobCounter;			
 		jobCounter = jobCounter + 1;
 		if (pid == 0){
 			addJob(args[0], jobList[jobNumber]);
-			// Child goes here
+			if (args[1] != NULL){
+				if (strcmp(args[1], ">") == 0){
+					close(1);
+					open(args[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+					args[1] = 0;
+					execvp(args[0], args);
+				}
+			}
 			if(strcmp(args[0], "cd") == 0){
 				shellCd(args);
 				removeJob(jobList[jobNumber]);
@@ -80,9 +80,6 @@ int main(void) {
 				shellPwd();
 				removeJob(jobList[jobNumber]);
 			}else if(strcmp(args[0], "exit") == 0){
-				for (int i = 0; i < 20; i++){
-					free(jobList[i]);
-				}
 				shellExit();
 			}else if(strcmp(args[0], "jobs") == 0){
 				printf("Listing jobs:\n");
@@ -101,7 +98,10 @@ int main(void) {
 			// Parent goes here
 			addJob(args[0], jobList[jobNumber]);
 			if (!bg){
-				waitpid(pid, NULL, 0);	
+				waitpid(pid, NULL, 0);
+			}
+			if(strcmp(args[0], "exit") == 0){
+				shellExit();
 			}
 		}
 	}
@@ -162,7 +162,6 @@ static void shellPwd(){
 }
 
 static void shellExit(){
-	printf("Leaving shell\n");
 	exit(0);
 }
 
